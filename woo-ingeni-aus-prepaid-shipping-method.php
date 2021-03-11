@@ -3,9 +3,11 @@
 Plugin Name: Woo Ingeni AusPost Prepaid Satchels Shipping Method
 Plugin URI: http://ingeni.net
 Description: Woo Ingeni AusPost Prepaid Satchels Shipping Method
-Version: 2020.01
+Version: 2021.01
 Author: Bruce McKinnon
 Author URI: http://ingeni.net
+
+v2021.01 - Updated satchel volumes to match new size AusPost 2021 satchels
 */
 
 
@@ -38,12 +40,5 @@ function ingeni_update_aus_prepaid_shipping_method() {
 		__FILE__,
 		'ingeni-update-aus-prepaid-shipping-method'
 	);
-	
-	//Optional: If you're using a private repository, specify the access token like this:
-	//$myUpdateChecker->setAuthentication('your-token-here');
-	
-	//Optional: Set the branch that contains the stable release.
-	//$myUpdateChecker->setBranch('stable-branch-name');
-
 }
 add_action( 'init', 'ingeni_update_aus_prepaid_shipping_method' );
