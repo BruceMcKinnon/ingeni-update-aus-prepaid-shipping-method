@@ -4,7 +4,7 @@ Contributors: Bruce McKinnon
 Tags: woocommerce, australi post, auspost
 Requires at least: 4.8
 Tested up to: 5.1.1
-Stable tag: 2021.01
+Stable tag: 2021.02
 
 A custom shipping method for WooCommerce that allows calculating of shipping using domestic prepaid satchels from Australia Post.
 
@@ -48,3 +48,6 @@ v2020.01 - Initial version.
 
 v2021.01 - Updated satchel volumes to match new AusPost 2021 pre-paid parcel post satchel sizes.
 
+v2022.01 - Updated add_aus_prepaid_satchels_shipping_method() to match class ID value.
+         - Updated default satchel prices.
+         - Fixed various errors in the calculate_shipping() function.

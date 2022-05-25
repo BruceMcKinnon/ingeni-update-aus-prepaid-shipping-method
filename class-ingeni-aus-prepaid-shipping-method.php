@@ -6,28 +6,29 @@
 //
 class WC_Ingeni_Aus_Prepaid_Statchels_Shipping_Method extends WC_Shipping_Method {
 
-  public function __construct() {
+  public function __construct( $instance_id = 0 ) {
+
 		$this->instance_id = absint( $instance_id );
-		$this->id = 'ingeni_aus_prepaid_satchels_shipping_method';
-	  $this->method_title = __( 'Aus Prepaid Satchels', 'woocommerce' );
+		$this->id = 'ingeni_aus_prepaid_satchels';
+		$this->method_title = __( 'Aus Prepaid Satchels', 'woocommerce' );
 		$this->method_description = __( 'Shipping Method for AusPost prepaid satchels' ); // Description shown in admin
+
+		$this->supports  = array(
+			'shipping-zones',
+			'instance-settings',
+			'settings',
+			'instance-settings-modal'
+		);
 
 		// Define user set variables
 		if ( !isset( $this->settings['enabled'] ) ) {
-			$this->settings['enabled'] = 'no';
+			$this->settings['enabled'] = 'yes';
 		}
 		$this->enabled = $this->settings['enabled'];
 
-    $this->title = isset( $this->settings['title'] ) ? $this->settings['title'] : __( 'Aus Prepaid Satchels', 'woocommerce' );
-/*
-		$this->supports  = array(
- 			'shipping-zones',
-  		'instance-settings',
-  		'instance-settings-modal',
- 		);
-		*/
-		$this->init();
+		$this->title = isset( $this->settings['title'] ) ? $this->settings['title'] : __( 'Aus Prepaid Satchels', 'woocommerce' );
 
+		$this->init();
 	}
 
 	function init() {
@@ -76,25 +77,25 @@ class WC_Ingeni_Aus_Prepaid_Statchels_Shipping_Method extends WC_Shipping_Method
 					'title' => __( 'Small', 'woocommerce' ),
 					'type' => 'text',
 					'description' => __( 'Small satchel charge', 'woocommerce' ),
-					'default' => '9.2'
+					'default' => '8.46'
 				),
 				'cost_medium' => array(
 					'title' => __( 'Medium', 'woocommerce' ),
 					'type' => 'text',
 					'description' => __( 'Medium satchel charge', 'woocommerce' ),
-					'default' => '12.45'
+					'default' => '11.48'
 				),
 				'cost_large' => array(
 					'title' => __( 'Large', 'woocommerce' ),
 					'type' => 'text',
 					'description' => __( 'Large satchel charge', 'woocommerce' ),
-					'default' => '15.7'
+					'default' => '14.46'
 				),
 				'cost_xlarge' => array(
 					'title' => __( 'Extra-Large', 'woocommerce' ),
 					'type' => 'text',
 					'description' => __( 'Extra Large satchel charge', 'woocommerce' ),
-					'default' => '18.95'
+					'default' => '17.42'
 				),
 			);
   	}
@@ -134,13 +135,6 @@ class WC_Ingeni_Aus_Prepaid_Statchels_Shipping_Method extends WC_Shipping_Method
 				$satchel_xlarge_cost = $this->settings['cost_xlarge'];
 
 				// Volumne in cubic cm
-				/*
-				$satchel_small_volume = 750;
-				$satchel_medium_volume = 940; 
-				$satchel_large_volume = 1110;
-				$satchel_xlarge_volume = 2010;
-				*/
-
 				// 2021 Sizes
 				$satchel_small_volume = 391;
 				$satchel_medium_volume = 635; 
@@ -150,6 +144,7 @@ class WC_Ingeni_Aus_Prepaid_Statchels_Shipping_Method extends WC_Shipping_Method
 				// Size max weights
 				$satchel_max_weight = 5;
 
+
 				// Allowed shipping classes
 				$permitted_shipping_classes = $this->settings['avail_classes'];
 //$this->fb_log('permitted: '.print_r($permitted_shipping_classes,true));
@@ -157,53 +152,58 @@ class WC_Ingeni_Aus_Prepaid_Statchels_Shipping_Method extends WC_Shipping_Method
 //$this->fb_log(print_r($package,true));		
 
 				//get the total weight and dimensions
-				$weight = 0;
+				$total_weight = 0;
 				$dimensions = 0;
 				$shipping_class_ok = true;
+
+
+
+
 				foreach ( $package['contents'] as $item_id => $values ) {
 					$_product  = $values['data'];
 //$this->fb_log(print_r($_product,true));
 
-					$shipping_class_id = $_product->shipping_class_id; // Shipping class ID
+					$shipping_class_id = $_product->get_shipping_class_id(); // Shipping class ID
 //$this->fb_log('shipping class: ['.$shipping_class_id.'] ');
 
 					// Check that this product is in the listy of permitted shipping classes
 					if ( is_array($permitted_shipping_classes) ) {
-						if ( !in_array( $shipping_class_id, $permitted_shipping_classes) ) {
-							$shipping_class_ok = false;
-//$this->fb_log('shipping class OK');
+						if ( count($permitted_shipping_classes) > 0 ) {
+							if ( !in_array( $shipping_class_id, $permitted_shipping_classes) ) {
+								$shipping_class_ok = false;
+								$this->fb_log('shipping class NOT OK');
+							}
 						}
 					}
+//if ($shipping_class_ok) {
+	//$this->fb_log('shipping class OK');
+//}
 
 					// Catch any missing values
-					if ( !is_numeric($_product->length) ) {
-						$_product->length = 1;
-					}
-					if ( !is_numeric($_product->width) ) {
-						$_product->width = 1;
-					}
-					if ( !is_numeric($_product->height) ) {
-						$_product->height = 1;
-					}
-					$prod_weigth = $_product->get_weight();
+					$prod_length = $prod_height = $prod_width = 1;
+					$prod_length = $_product->get_length();
+					$prod_height = $_product->get_height();
+					$prod_width = $_product->get_width();
+
+					$prod_weight = $_product->get_weight();
 					if ( !is_numeric($prod_weight) ) {
 						$prod_weight = 1;
 					}
 
 
-//$this->fb_log($_product->get_title().'  weight:'.$weight.' prod weight:'.$prod_weight.' qty:'.$values['quantity']);
-//$this->fb_log($_product->get_title().'  prod length:'.$_product->length.' width:'.$_product->width );
-					$weight =	$weight + ($prod_weight * $values['quantity']);
+//$this->fb_log($_product->get_title().'  weight:'.$total_weight.' prod weight:'.$prod_weight.' qty:'.$values['quantity']);
+//$this->fb_log($_product->get_title().'  prod length:'.$prod_length.' width:'.$prod_width );
+					$total_weight = $total_weight + ($prod_weight * $values['quantity']);
 //$this->fb_log('dim:'.$dimensions);
-					$dimensions += (($_product->length * $values['quantity']) * $_product->width * $_product->height);
+					$dimensions += (($prod_length * $values['quantity']) * $prod_width * $prod_height);
 				}
 
-//$this->fb_log('weight:'.$weight.' volume:'.$dimensions);
+//$this->fb_log('weight:'.$total_weight.' volume:'.$dimensions);
 				
 				//calculate the cost according to the volume
 				$cost = 0;
 				$satchel_name = "";
-				if ( ( $weight < $satchel_max_weight ) && ( $shipping_class_ok ) ) {
+				if ( ( $total_weight < $satchel_max_weight ) && ( $shipping_class_ok ) ) {
 					if ($dimensions < $satchel_small_volume) {
 						$cost = $satchel_small_cost;
 						$satchel_name = "Small";
